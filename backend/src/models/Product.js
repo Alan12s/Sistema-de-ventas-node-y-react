@@ -13,11 +13,11 @@ const Product = sequelize.define('Product', {
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'El nombre del producto es requerido'
+        msg: 'Product name is required'
       },
       len: {
         args: [2, 200],
-        msg: 'El nombre debe tener entre 2 y 200 caracteres'
+        msg: 'Name must be between 2 and 200 characters'
       }
     }
   },
@@ -29,12 +29,12 @@ const Product = sequelize.define('Product', {
     type: DataTypes.STRING(100),
     allowNull: true,
     unique: {
-      msg: 'Este código de barras ya está registrado'
+      msg: 'This barcode is already registered'
     },
     validate: {
       len: {
         args: [0, 100],
-        msg: 'El código de barras no puede exceder 100 caracteres'
+        msg: 'Barcode cannot exceed 100 characters'
       }
     }
   },
@@ -42,7 +42,7 @@ const Product = sequelize.define('Product', {
     type: DataTypes.STRING(50),
     allowNull: true,
     unique: {
-      msg: 'Este SKU ya está en uso'
+      msg: 'This SKU is already in use'
     }
   },
   price: {
@@ -51,10 +51,10 @@ const Product = sequelize.define('Product', {
     validate: {
       min: {
         args: [0],
-        msg: 'El precio debe ser mayor o igual a 0'
+        msg: 'Price must be greater than or equal to 0'
       },
       isDecimal: {
-        msg: 'El precio debe ser un número decimal válido'
+        msg: 'Price must be a valid decimal number'
       }
     },
     get() {
@@ -69,7 +69,7 @@ const Product = sequelize.define('Product', {
     validate: {
       min: {
         args: [0],
-        msg: 'El costo debe ser mayor o igual a 0'
+        msg: 'Cost must be greater than or equal to 0'
       }
     },
     get() {
@@ -84,10 +84,10 @@ const Product = sequelize.define('Product', {
     validate: {
       min: {
         args: [0],
-        msg: 'El stock no puede ser negativo'
+        msg: 'Stock cannot be negative'
       },
       isInt: {
-        msg: 'El stock debe ser un número entero'
+        msg: 'Stock must be an integer'
       }
     }
   },
@@ -99,17 +99,25 @@ const Product = sequelize.define('Product', {
     validate: {
       min: {
         args: [0],
-        msg: 'El stock mínimo no puede ser negativo'
+        msg: 'Minimum stock cannot be negative'
       }
     }
   },
   imageUrl: {
-    type: DataTypes.STRING(500),
+    type: DataTypes.TEXT, // 🔥 Cambiado de STRING(500) a TEXT para soportar base64
     allowNull: true,
     field: 'image_url',
     validate: {
-      isUrl: {
-        msg: 'Debe ser una URL válida'
+      // 🔥 Validación personalizada que acepta URLs o deja vacío
+      isValidImageUrl(value) {
+        if (!value || value.trim() === '') {
+          return; // Permitir vacío
+        }
+        // Permitir URLs que empiecen con http/https o data:image (base64)
+        const urlPattern = /^(https?:\/\/|data:image\/)/i;
+        if (!urlPattern.test(value)) {
+          throw new Error('Must be a valid URL or base64 image');
+        }
       }
     }
   },
@@ -130,9 +138,7 @@ const Product = sequelize.define('Product', {
 }, {
   tableName: 'products',
   timestamps: true,
-  underscored: true, // CRÍTICO: Esto convierte automáticamente createdAt -> created_at
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
+  underscored: true,
   indexes: [
     {
       name: 'idx_products_barcode',

@@ -30,7 +30,7 @@ const SaleItem = sequelize.define('SaleItem', {
     type: DataTypes.STRING(200),
     allowNull: false,
     field: 'product_name',
-    comment: 'Nombre del producto al momento de la venta'
+    comment: 'Product name at the time of sale'
   },
   quantity: {
     type: DataTypes.INTEGER,
@@ -38,10 +38,10 @@ const SaleItem = sequelize.define('SaleItem', {
     validate: {
       min: {
         args: [1],
-        msg: 'La cantidad debe ser al menos 1'
+        msg: 'Quantity must be at least 1'
       },
       isInt: {
-        msg: 'La cantidad debe ser un número entero'
+        msg: 'Quantity must be an integer'
       }
     }
   },
@@ -52,7 +52,7 @@ const SaleItem = sequelize.define('SaleItem', {
     validate: {
       min: {
         args: [0],
-        msg: 'El precio unitario debe ser mayor o igual a 0'
+        msg: 'Unit price must be greater than or equal to 0'
       }
     }
   },
@@ -62,7 +62,7 @@ const SaleItem = sequelize.define('SaleItem', {
     validate: {
       min: {
         args: [0],
-        msg: 'El subtotal debe ser mayor o igual a 0'
+        msg: 'Subtotal must be greater than or equal to 0'
       }
     }
   },
@@ -73,15 +73,14 @@ const SaleItem = sequelize.define('SaleItem', {
     validate: {
       min: {
         args: [0],
-        msg: 'El descuento debe ser mayor o igual a 0'
+        msg: 'Discount must be greater than or equal to 0'
       }
     }
   }
 }, {
   tableName: 'sale_items',
   timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
+  underscored: true,
   indexes: [
     {
       name: 'idx_sale_items_sale',

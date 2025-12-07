@@ -6,9 +6,7 @@ const Product = require('./Product');
 const Sale = require('./Sale');
 const SaleItem = require('./SaleItem');
 
-// ===== DEFINIR RELACIONES =====
-
-// Relación: Product - Category (Muchos a Uno)
+// Product - Category (Many to One)
 Product.belongsTo(Category, {
   foreignKey: 'categoryId',
   as: 'category'
@@ -19,7 +17,7 @@ Category.hasMany(Product, {
   as: 'products'
 });
 
-// Relación: Sale - User (Muchos a Uno)
+// Sale - User (Many to One)
 Sale.belongsTo(User, {
   foreignKey: 'userId',
   as: 'user'
@@ -30,7 +28,7 @@ User.hasMany(Sale, {
   as: 'sales'
 });
 
-// Relación: Sale - SaleItem (Uno a Muchos)
+// Sale - SaleItem (One to Many)
 Sale.hasMany(SaleItem, {
   foreignKey: 'saleId',
   as: 'items',
@@ -42,7 +40,7 @@ SaleItem.belongsTo(Sale, {
   as: 'sale'
 });
 
-// Relación: SaleItem - Product (Muchos a Uno)
+// SaleItem - Product (Many to One)
 SaleItem.belongsTo(Product, {
   foreignKey: 'productId',
   as: 'product'
@@ -53,14 +51,16 @@ Product.hasMany(SaleItem, {
   as: 'saleItems'
 });
 
-// Función para sincronizar base de datos
 const syncDatabase = async (force = false) => {
   try {
     await sequelize.sync({ force, alter: !force });
-    console.log(`✓ Base de datos sincronizada ${force ? '(FORZADA - DATOS ELIMINADOS)' : ''}`);
+    const message = force 
+      ? 'Database synchronized (FORCED - DATA DELETED)' 
+      : 'Database synchronized';
+    console.log(message);
     return true;
   } catch (error) {
-    console.error('✗ Error al sincronizar base de datos:', error);
+    console.error('Error synchronizing database:', error);
     return false;
   }
 };

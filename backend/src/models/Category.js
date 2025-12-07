@@ -12,15 +12,15 @@ const Category = sequelize.define('Category', {
     type: DataTypes.STRING(100),
     allowNull: false,
     unique: {
-      msg: 'Ya existe una categoría con este nombre'
+      msg: 'A category with this name already exists'
     },
     validate: {
       notEmpty: {
-        msg: 'El nombre es requerido'
+        msg: 'Name is required'
       },
       len: {
         args: [2, 100],
-        msg: 'El nombre debe tener entre 2 y 100 caracteres'
+        msg: 'Name must be between 2 and 100 characters'
       }
     }
   },
@@ -36,8 +36,7 @@ const Category = sequelize.define('Category', {
 }, {
   tableName: 'categories',
   timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at'
+  underscored: true
 });
 
 module.exports = Category;

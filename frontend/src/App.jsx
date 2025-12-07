@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import useAuthStore from './store/authStore';
+// Pages
 import Login from './pages/auth/Login';
 import Dashboard from './pages/dashboard/Dashboard';
 import ProductsIndex from './pages/products/ProductsIndex';
@@ -9,134 +10,134 @@ import ProductCreate from './pages/products/ProductCreate';
 import ProductEdit from './pages/products/ProductEdit';
 import ProductShow from './pages/products/ProductShow';
 import CategoriesIndex from './pages/categories/CategoriesIndex';
+import SalesIndex from './pages/sales/SalesIndex';
+import UsersIndex from './pages/users/UsersIndex';
+import POS from './pages/pos/POS';
+import Profile from './pages/profile/Profile';
 
-// Componente para rutas protegidas
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuthStore();
-  
+// Ruta protegida
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { isAuthenticated, user } = useAuthStore();
+
+  console.log('🔐 ProtectedRoute:', { isAuthenticated, user, allowedRoles });
+
   if (!isAuthenticated) {
+    console.log('❌ No autenticado, redirigiendo a /login');
     return <Navigate to="/login" replace />;
   }
-  
-  return children;
-};
 
-// Componente para redirigir si ya está autenticado
-const PublicRoute = ({ children }) => {
-  const { isAuthenticated } = useAuthStore();
-  
-  if (isAuthenticated) {
+  if (allowedRoles && !allowedRoles.includes(user?.role)) {
+    console.log('❌ Sin permisos, redirigiendo a /dashboard');
     return <Navigate to="/dashboard" replace />;
   }
-  
+
+  console.log('✅ Acceso permitido');
   return children;
 };
 
 function App() {
   return (
     <BrowserRouter>
-      {/* Notificaciones Toast */}
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            background: '#363636',
-            color: '#fff',
-          },
-          success: {
-            duration: 3000,
-            iconTheme: {
-              primary: '#10b981',
-              secondary: '#fff',
-            },
-          },
-          error: {
-            duration: 4000,
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: '#fff',
-            },
-          },
-        }}
-      />
-
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       <Routes>
-        {/* Ruta raíz - redirige según autenticación */}
+        {/* 🔓 Ruta pública */}
+        <Route path="/login" element={<Login />} />
+
+        {/* 🔒 Rutas protegidas - TODOS los usuarios autenticados */}
         <Route 
-          path="/" 
-          element={
-            <Navigate to={useAuthStore.getState().isAuthenticated ? '/dashboard' : '/login'} replace />
-          } 
-        />
-
-        {/* Rutas públicas */}
-        <Route
-          path="/login"
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          }
-        />
-
-        {/* Rutas protegidas */}
-        <Route
-          path="/dashboard"
+          path="/dashboard" 
           element={
             <ProtectedRoute>
               <Dashboard />
             </ProtectedRoute>
-          }
+          } 
+        />
+        
+        <Route 
+          path="/pos" 
+          element={
+            <ProtectedRoute>
+              <POS />
+            </ProtectedRoute>
+          } 
         />
 
-        {/* RUTAS DE PRODUCTOS */}
-        <Route
-          path="/products"
+        <Route 
+          path="/products" 
           element={
             <ProtectedRoute>
               <ProductsIndex />
             </ProtectedRoute>
-          }
+          } 
         />
 
-        <Route
-          path="/products/create"
-          element={
-            <ProtectedRoute>
-              <ProductCreate />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/products/edit/:id"
-          element={
-            <ProtectedRoute>
-              <ProductEdit />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/products/show/:id"
+        <Route 
+          path="/products/show/:id" 
           element={
             <ProtectedRoute>
               <ProductShow />
             </ProtectedRoute>
-          }
+          } 
         />
-        {/* RUTAS DE CATEGORIAS */}
-        <Route
-          path="/categories"
+
+        <Route 
+          path="/categories" 
           element={
             <ProtectedRoute>
               <CategoriesIndex />
             </ProtectedRoute>
-          }
+          } 
         />
 
-        {/* Ruta 404 */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route 
+          path="/sales" 
+          element={
+            <ProtectedRoute>
+              <SalesIndex />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* 🔒 Rutas solo ADMIN */}
+        <Route 
+          path="/products/create" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <ProductCreate />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/products/edit/:id" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <ProductEdit />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/users" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <UsersIndex />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* 🏠 Redirecciones */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );

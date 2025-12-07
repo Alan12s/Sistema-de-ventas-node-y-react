@@ -14,15 +14,15 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING(50),
     allowNull: false,
     unique: {
-      msg: 'Este nombre de usuario ya está en uso'
+      msg: 'This username is already in use'
     },
     validate: {
       len: {
         args: [3, 50],
-        msg: 'El username debe tener entre 3 y 50 caracteres'
+        msg: 'Username must be between 3 and 50 characters'
       },
       notEmpty: {
-        msg: 'El username es requerido'
+        msg: 'Username is required'
       }
     }
   },
@@ -30,14 +30,14 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING(100),
     allowNull: false,
     unique: {
-      msg: 'Este email ya está registrado'
+      msg: 'This email is already registered'
     },
     validate: {
       isEmail: {
-        msg: 'Debe ser un email válido'
+        msg: 'Must be a valid email'
       },
       notEmpty: {
-        msg: 'El email es requerido'
+        msg: 'Email is required'
       }
     }
   },
@@ -46,11 +46,11 @@ const User = sequelize.define('User', {
     allowNull: false,
     validate: {
       notEmpty: {
-        msg: 'La contraseña es requerida'
+        msg: 'Password is required'
       },
       len: {
         args: [6, 255],
-        msg: 'La contraseña debe tener al menos 6 caracteres'
+        msg: 'Password must be at least 6 characters'
       }
     }
   },
@@ -60,7 +60,7 @@ const User = sequelize.define('User', {
     field: 'full_name',
     validate: {
       notEmpty: {
-        msg: 'El nombre completo es requerido'
+        msg: 'Full name is required'
       }
     }
   },
@@ -71,7 +71,7 @@ const User = sequelize.define('User', {
     validate: {
       isIn: {
         args: [[ROLES.ADMIN, ROLES.VENDEDOR]],
-        msg: 'Rol inválido'
+        msg: 'Invalid role'
       }
     }
   },
@@ -83,21 +83,25 @@ const User = sequelize.define('User', {
 }, {
   tableName: 'users',
   timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
+  underscored: true,
   hooks: {
-    // Encriptar contraseña antes de crear
+    // 🔥 Hook que se ejecuta ANTES de crear un usuario
     beforeCreate: async (user) => {
       if (user.password) {
+        console.log('🔐 Hasheando contraseña en beforeCreate para:', user.username);
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(user.password, salt);
+        console.log('✅ Contraseña hasheada correctamente');
       }
     },
-    // Encriptar contraseña antes de actualizar
+    // 🔥 Hook que se ejecuta ANTES de actualizar un usuario
     beforeUpdate: async (user) => {
+      // Solo hashear si la contraseña cambió
       if (user.changed('password')) {
+        console.log('🔐 Hasheando contraseña en beforeUpdate para:', user.username);
         const salt = await bcrypt.genSalt(10);
         user.password = await bcrypt.hash(user.password, salt);
+        console.log('✅ Contraseña hasheada correctamente');
       }
     }
   }
@@ -105,10 +109,13 @@ const User = sequelize.define('User', {
 
 // Método para comparar contraseñas
 User.prototype.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
+  console.log('🔍 Comparando contraseñas para usuario:', this.username);
+  const isMatch = await bcrypt.compare(candidatePassword, this.password);
+  console.log('🔍 Resultado de comparación:', isMatch ? '✅ Coincide' : '❌ No coincide');
+  return isMatch;
 };
 
-// Método para obtener usuario sin contraseña
+// Método para ocultar contraseña en JSON
 User.prototype.toJSON = function() {
   const values = { ...this.get() };
   delete values.password;

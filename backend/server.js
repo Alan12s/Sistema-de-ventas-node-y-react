@@ -6,78 +6,95 @@ const { ROLES } = require('./src/constants/roles');
 
 const PORT = process.env.PORT || 5000;
 
-/**
- * Crear usuario administrador por defecto si no existe
- */
-const createDefaultAdmin = async () => {
+const createDefaultUsers = async () => {
   try {
-    // Verificar si ya existe un admin
+    // Crear Admin
     const adminExists = await User.findOne({
-      where: { role: ROLES.ADMIN }
+      where: { username: 'admin' }
     });
 
     if (!adminExists) {
-      // Crear admin por defecto
       await User.create({
         username: 'admin',
         email: 'admin@sistema.com',
-        password: 'admin123', // Cambiar en producción
+        password: 'admin123',
         fullName: 'Administrador del Sistema',
         role: ROLES.ADMIN
       });
-      console.log('✓ Usuario administrador creado');
-      console.log('  Username: admin');
-      console.log('  Password: admin123');
+      console.log('✅ Default admin user created');
+      console.log('   Username: admin');
+      console.log('   Password: admin123');
     } else {
-      console.log('✓ Usuario administrador ya existe');
+      console.log('ℹ️  Admin user already exists');
     }
+
+    // Crear Vendedor
+    const sellerExists = await User.findOne({
+      where: { username: 'vendedor' }
+    });
+
+    if (!sellerExists) {
+      await User.create({
+        username: 'vendedor',
+        email: 'vendedor@sistema.com',
+        password: 'vendedor123',
+        fullName: 'Usuario Vendedor',
+        role: ROLES.VENDEDOR
+      });
+      console.log('✅ Default seller user created');
+      console.log('   Username: vendedor');
+      console.log('   Password: vendedor123');
+    } else {
+      console.log('ℹ️  Seller user already exists');
+    }
+
   } catch (error) {
-    console.error('✗ Error al crear admin:', error.message);
+    console.error('❌ Error creating default users:', error.message);
   }
 };
 
-/**
- * Iniciar el servidor
- */
 const startServer = async () => {
   try {
     console.log('==========================================');
-    console.log('🚀 Iniciando Sistema de Ventas...');
+    console.log('Starting Sales System...');
     console.log('==========================================\n');
 
-    // 1. Probar conexión a la base de datos
-    console.log('📊 Conectando a PostgreSQL...');
+    console.log('Connecting to PostgreSQL...');
     const connected = await testConnection();
     
     if (!connected) {
-      throw new Error('No se pudo conectar a la base de datos');
+      throw new Error('Could not connect to database');
     }
 
-    // 2. Sincronizar modelos con la base de datos
-    console.log('\n🔄 Sincronizando modelos...');
-    await syncDatabase(false); // false = no borrar datos existentes
+    console.log('\nSynchronizing models...');
+    await syncDatabase(false);
     
-    // 3. Crear admin por defecto
-    console.log('\n👤 Verificando usuario administrador...');
-    await createDefaultAdmin();
+    console.log('\nVerifying default users...');
+    await createDefaultUsers();
 
-    // 4. Iniciar servidor
     app.listen(PORT, () => {
       console.log('\n==========================================');
-      console.log('✅ Servidor iniciado correctamente');
+      console.log('Server started successfully');
       console.log('==========================================');
-      console.log(`🌐 Servidor: http://localhost:${PORT}`);
-      console.log(`📡 API: http://localhost:${PORT}/api`);
-      console.log(`🏥 Health: http://localhost:${PORT}/api/health`);
+      console.log(`Server: http://localhost:${PORT}`);
+      console.log(`API: http://localhost:${PORT}/api`);
+      console.log(`Health: http://localhost:${PORT}/api/health`);
+      console.log('==========================================');
+      console.log('\n📋 Default Credentials:');
+      console.log('👤 Admin:');
+      console.log('   Username: admin');
+      console.log('   Password: admin123');
+      console.log('👤 Vendedor:');
+      console.log('   Username: vendedor');
+      console.log('   Password: vendedor123');
       console.log('==========================================\n');
-      console.log('Presiona CTRL+C para detener el servidor\n');
+      console.log('Press CTRL+C to stop the server\n');
     });
 
   } catch (error) {
-    console.error('\n❌ Error al iniciar el servidor:', error.message);
+    console.error('\n❌ Error starting server:', error.message);
     process.exit(1);
   }
 };
 
-// Iniciar
 startServer();

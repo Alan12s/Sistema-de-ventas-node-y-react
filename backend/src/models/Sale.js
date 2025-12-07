@@ -30,7 +30,7 @@ const Sale = sequelize.define('Sale', {
     validate: {
       min: {
         args: [0],
-        msg: 'El subtotal debe ser mayor o igual a 0'
+        msg: 'Subtotal must be greater than or equal to 0'
       }
     }
   },
@@ -41,7 +41,7 @@ const Sale = sequelize.define('Sale', {
     validate: {
       min: {
         args: [0],
-        msg: 'El impuesto debe ser mayor o igual a 0'
+        msg: 'Tax must be greater than or equal to 0'
       }
     }
   },
@@ -52,7 +52,7 @@ const Sale = sequelize.define('Sale', {
     validate: {
       min: {
         args: [0],
-        msg: 'El descuento debe ser mayor o igual a 0'
+        msg: 'Discount must be greater than or equal to 0'
       }
     }
   },
@@ -62,7 +62,7 @@ const Sale = sequelize.define('Sale', {
     validate: {
       min: {
         args: [0],
-        msg: 'El total debe ser mayor o igual a 0'
+        msg: 'Total must be greater than or equal to 0'
       }
     }
   },
@@ -87,15 +87,14 @@ const Sale = sequelize.define('Sale', {
     allowNull: true
   },
   status: {
-    type: DataTypes.ENUM('COMPLETADA', 'CANCELADA', 'PENDIENTE'),
+    type: DataTypes.ENUM('COMPLETADA', 'ANULADA', 'PENDIENTE'),
     allowNull: false,
     defaultValue: 'COMPLETADA'
   }
 }, {
   tableName: 'sales',
   timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
+  underscored: true,
   indexes: [
     {
       name: 'idx_sales_user',

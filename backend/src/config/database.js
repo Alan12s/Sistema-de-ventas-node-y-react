@@ -10,24 +10,29 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: 'postgres',
-    logging: false, // Cambia a console.log para ver las consultas SQL
+    logging: false,
     pool: {
       max: 5,
       min: 0,
       acquire: 30000,
       idle: 10000
+    },
+    define: {
+      underscored: true,
+      timestamps: true,
+      createdAt: 'created_at',
+      updatedAt: 'updated_at'
     }
   }
 );
 
-// Función para probar la conexión
 const testConnection = async () => {
   try {
     await sequelize.authenticate();
-    console.log('✓ Conexión a PostgreSQL establecida correctamente');
+    console.log('Connection to PostgreSQL established successfully');
     return true;
   } catch (error) {
-    console.error('✗ Error al conectar a PostgreSQL:', error.message);
+    console.error('Unable to connect to PostgreSQL:', error.message);
     return false;
   }
 };

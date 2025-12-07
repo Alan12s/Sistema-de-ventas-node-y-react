@@ -1,14 +1,17 @@
 // frontend/src/pages/products/ProductCreate.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiSave, FiX, FiPackage, FiDollarSign, FiHash, FiLayers, FiImage } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import MainLayout from '../../components/layout/MainLayout';
-import axios from 'axios';
+import { createProduct, getCategories } from '../../services/api';
 
 const ProductCreate = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -22,6 +25,23 @@ const ProductCreate = () => {
     imageUrl: '',
     isActive: true
   });
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const response = await getCategories({ isActive: true });
+      setCategories(response.data.categories || []);
+    } catch (error) {
+      console.error('Error al cargar categorías:', error);
+      toast.error('Error al cargar las categorías');
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -42,8 +62,6 @@ const ProductCreate = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-
       const productData = {
         name: formData.name.trim(),
         description: formData.description?.trim() || null,
@@ -58,21 +76,9 @@ const ProductCreate = () => {
         isActive: formData.isActive
       };
 
-      const response = await axios.post(
-        'http://localhost:5000/api/products',
-        productData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-
-      if (response.data.success) {
-        toast.success('¡Producto creado exitosamente!');
-        setTimeout(() => navigate('/products'), 1000);
-      }
+      await createProduct(productData);
+      toast.success('Producto creado exitosamente');
+      setTimeout(() => navigate('/products'), 1000);
     } catch (error) {
       console.error('Error al crear producto:', error);
       const errorMessage = error.response?.data?.message || 'Error al crear el producto';
@@ -94,15 +100,15 @@ const ProductCreate = () => {
 
   return (
     <MainLayout>
-      <div className="mb-6">
-        <div className="flex items-center justify-between">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Nuevo Producto</h1>
-            <p className="text-sm text-gray-600 mt-1">Completa la información del producto</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Nuevo Producto</h1>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">Completa la información del producto</p>
           </div>
           <button
             onClick={() => navigate('/products')}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 w-full sm:w-auto"
           >
             <FiX className="mr-2 h-4 w-4" />
             Cancelar
@@ -111,22 +117,22 @@ const ProductCreate = () => {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             
             {/* Información Básica */}
             <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-              <div className="border-b border-gray-200 px-6 py-4">
-                <h2 className="text-base font-semibold text-gray-900 flex items-center">
-                  <FiPackage className="mr-2 h-5 w-5 text-blue-600" />
+              <div className="border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
+                <h2 className="text-sm sm:text-base font-semibold text-gray-900 flex items-center">
+                  <FiPackage className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                   Información Básica
                 </h2>
               </div>
               
-              <div className="p-6 space-y-4">
+              <div className="p-4 sm:p-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                     Nombre del Producto <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -141,7 +147,7 @@ const ProductCreate = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                     Descripción
                   </label>
                   <textarea
@@ -154,9 +160,9 @@ const ProductCreate = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                       Código de Barras
                     </label>
                     <div className="relative">
@@ -173,7 +179,7 @@ const ProductCreate = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                       SKU
                     </label>
                     <input
@@ -191,17 +197,17 @@ const ProductCreate = () => {
 
             {/* Precios e Inventario */}
             <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-              <div className="border-b border-gray-200 px-6 py-4">
-                <h2 className="text-base font-semibold text-gray-900 flex items-center">
-                  <FiDollarSign className="mr-2 h-5 w-5 text-green-600" />
+              <div className="border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
+                <h2 className="text-sm sm:text-base font-semibold text-gray-900 flex items-center">
+                  <FiDollarSign className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                   Precios e Inventario
                 </h2>
               </div>
 
-              <div className="p-6">
-                <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="p-4 sm:p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                       Precio de Venta <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
@@ -221,7 +227,7 @@ const ProductCreate = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                       Costo de Compra
                     </label>
                     <div className="relative">
@@ -240,7 +246,7 @@ const ProductCreate = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                       Stock Actual <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -256,7 +262,7 @@ const ProductCreate = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
                       Stock Mínimo
                     </label>
                     <input
@@ -286,44 +292,54 @@ const ProductCreate = () => {
             </div>
           </div>
 
-          {/* Columna Lateral (1/3) */}
-          <div className="space-y-6">
+          {/* Columna Lateral */}
+          <div className="space-y-4 sm:space-y-6">
             
             {/* Categoría */}
             <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-              <div className="border-b border-gray-200 px-6 py-4">
-                <h2 className="text-base font-semibold text-gray-900 flex items-center">
-                  <FiLayers className="mr-2 h-5 w-5 text-purple-600" />
+              <div className="border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
+                <h2 className="text-sm sm:text-base font-semibold text-gray-900 flex items-center">
+                  <FiLayers className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
                   Categoría
                 </h2>
               </div>
               
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <select
                   name="categoryId"
                   value={formData.categoryId}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={loadingCategories}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
-                  <option value="">Sin categoría</option>
+                  <option value="">
+                    {loadingCategories ? 'Cargando categorías...' : 'Sin categoría'}
+                  </option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
                 </select>
                 <p className="text-xs text-gray-500 mt-2">
-                  Las categorías ayudan a organizar el inventario
+                  {categories.length === 0 && !loadingCategories
+                    ? 'No hay categorías disponibles'
+                    : 'Las categorías ayudan a organizar el inventario'}
                 </p>
               </div>
             </div>
 
             {/* Imagen */}
             <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-              <div className="border-b border-gray-200 px-6 py-4">
-                <h2 className="text-base font-semibold text-gray-900 flex items-center">
-                  <FiImage className="mr-2 h-5 w-5 text-indigo-600" />
+              <div className="border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
+                <h2 className="text-sm sm:text-base font-semibold text-gray-900 flex items-center">
+                  <FiImage className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-indigo-600" />
                   Imagen
                 </h2>
               </div>
               
-              <div className="p-6">
-                <div className="w-full h-40 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center mb-3">
+              <div className="p-4 sm:p-6">
+                <div className="w-full h-32 sm:h-40 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center mb-3">
                   {formData.imageUrl ? (
                     <img 
                       src={formData.imageUrl} 
@@ -332,7 +348,7 @@ const ProductCreate = () => {
                       onError={(e) => e.target.src = ''}
                     />
                   ) : (
-                    <FiPackage className="h-12 w-12 text-gray-400" />
+                    <FiPackage className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400" />
                   )}
                 </div>
 
@@ -352,13 +368,13 @@ const ProductCreate = () => {
 
             {/* Estado */}
             <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-              <div className="border-b border-gray-200 px-6 py-4">
-                <h2 className="text-base font-semibold text-gray-900">
+              <div className="border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
+                <h2 className="text-sm sm:text-base font-semibold text-gray-900">
                   Estado
                 </h2>
               </div>
               
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <label className="flex items-start space-x-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -378,11 +394,11 @@ const ProductCreate = () => {
             </div>
 
             {/* Botones */}
-            <div className="sticky top-6">
+            <div className="lg:sticky lg:top-6">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
               >
                 {loading ? (
                   <>
@@ -403,7 +419,7 @@ const ProductCreate = () => {
               <button
                 type="button"
                 onClick={() => navigate('/products')}
-                className="w-full mt-3 bg-white text-gray-700 py-2.5 px-4 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 transition-colors"
+                className="w-full mt-3 bg-white text-gray-700 py-2.5 px-4 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 transition-colors text-sm sm:text-base"
               >
                 Cancelar
               </button>

@@ -1,8 +1,7 @@
-// backend/src/routes/category.routes.js
 const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/categoryController');
-const { authenticate } = require('../middleware/auth');
+const authenticate = require('../middleware/auth');   // <-- CORREGIDO
 const { checkPermission } = require('../middleware/roles');
 
 // Todas las rutas requieren autenticación
@@ -10,8 +9,6 @@ router.use(authenticate);
 
 /**
  * GET /api/categories
- * Obtener todas las categorías
- * Permisos: categories:view
  */
 router.get(
   '/',
@@ -21,8 +18,6 @@ router.get(
 
 /**
  * GET /api/categories/:id
- * Obtener una categoría por ID
- * Permisos: categories:view
  */
 router.get(
   '/:id',
@@ -32,8 +27,6 @@ router.get(
 
 /**
  * POST /api/categories
- * Crear una nueva categoría
- * Permisos: categories:create (solo ADMIN)
  */
 router.post(
   '/',
@@ -43,8 +36,6 @@ router.post(
 
 /**
  * PUT /api/categories/:id
- * Actualizar una categoría
- * Permisos: categories:update (solo ADMIN)
  */
 router.put(
   '/:id',
@@ -54,8 +45,6 @@ router.put(
 
 /**
  * DELETE /api/categories/:id
- * Eliminar una categoría
- * Permisos: categories:delete (solo ADMIN)
  */
 router.delete(
   '/:id',

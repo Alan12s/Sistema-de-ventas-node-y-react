@@ -29,25 +29,28 @@ const getAllCategories = async (req, res) => {
       order: [['name', 'ASC']],
       limit: parseInt(limit),
       offset: offset,
-      attributes: {
-        include: [
-          // Contar productos asociados
-          [
-            require('sequelize').literal(`(
-              SELECT COUNT(*)
-              FROM products
-              WHERE products.category_id = "Category"."id"
-            )`),
-            'productCount'
-          ]
-        ]
-      }
+      include: [{
+        model: Product,
+        as: 'products',
+        attributes: ['id'],
+        required: false
+      }]
+    });
+
+    // Mapear para agregar productCount
+    const categoriesWithCount = categories.map(cat => {
+      const categoryData = cat.toJSON();
+      return {
+        ...categoryData,
+        productCount: categoryData.products?.length || 0,
+        products: undefined // No enviar la lista completa
+      };
     });
 
     res.json({
       success: true,
       data: {
-        categories,
+        categories: categoriesWithCount,
         pagination: {
           total: count,
           page: parseInt(page),
@@ -75,13 +78,11 @@ const getCategoryById = async (req, res) => {
     const { id } = req.params;
 
     const category = await Category.findByPk(id, {
-      include: [
-        {
-          model: Product,
-          as: 'products',
-          attributes: ['id', 'name', 'price', 'stock']
-        }
-      ]
+      include: [{
+        model: Product,
+        as: 'products',
+        attributes: ['id', 'name', 'price', 'stock', 'isActive']
+      }]
     });
 
     if (!category) {
@@ -113,7 +114,9 @@ const createCategory = async (req, res) => {
   try {
     const { name, description, isActive } = req.body;
 
-    if (!name) {
+    console.log('📝 Creando categoría:', { name, description, isActive });
+
+    if (!name || !name.trim()) {
       return res.status(400).json({
         success: false,
         message: 'El nombre es obligatorio'
@@ -138,6 +141,8 @@ const createCategory = async (req, res) => {
       isActive: isActive !== undefined ? isActive : true
     });
 
+    console.log('✅ Categoría creada:', category.id);
+
     res.status(201).json({
       success: true,
       message: 'Categoría creada exitosamente',
@@ -145,7 +150,7 @@ const createCategory = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en createCategory:', error);
+    console.error('❌ Error en createCategory:', error);
     res.status(500).json({
       success: false,
       message: 'Error al crear la categoría',
@@ -162,6 +167,8 @@ const updateCategory = async (req, res) => {
     const { id } = req.params;
     const { name, description, isActive } = req.body;
 
+    console.log('📝 Actualizando categoría:', id);
+
     const category = await Category.findByPk(id);
 
     if (!category) {
@@ -172,7 +179,7 @@ const updateCategory = async (req, res) => {
     }
 
     // Verificar nombre único (si cambió)
-    if (name && name.trim() !== category.name) {
+    if (name && name.trim().toLowerCase() !== category.name.toLowerCase()) {
       const existingCategory = await Category.findOne({ 
         where: { 
           name: { [Op.iLike]: name.trim() },
@@ -190,9 +197,11 @@ const updateCategory = async (req, res) => {
 
     await category.update({
       name: name?.trim() || category.name,
-      description: description !== undefined ? description?.trim() : category.description,
+      description: description !== undefined ? (description?.trim() || null) : category.description,
       isActive: isActive !== undefined ? isActive : category.isActive
     });
+
+    console.log('✅ Categoría actualizada:', id);
 
     res.json({
       success: true,
@@ -201,7 +210,7 @@ const updateCategory = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error en updateCategory:', error);
+    console.error('❌ Error en updateCategory:', error);
     res.status(500).json({
       success: false,
       message: 'Error al actualizar la categoría',
@@ -216,6 +225,8 @@ const updateCategory = async (req, res) => {
 const deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
+
+    console.log('🗑️ Eliminando categoría:', id);
 
     const category = await Category.findByPk(id);
 
@@ -240,13 +251,15 @@ const deleteCategory = async (req, res) => {
 
     await category.destroy();
 
+    console.log('✅ Categoría eliminada:', id);
+
     res.json({
       success: true,
       message: 'Categoría eliminada exitosamente'
     });
 
   } catch (error) {
-    console.error('Error en deleteCategory:', error);
+    console.error('❌ Error en deleteCategory:', error);
     res.status(500).json({
       success: false,
       message: 'Error al eliminar la categoría',

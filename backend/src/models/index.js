@@ -5,6 +5,7 @@ const Category = require('./Category');
 const Product = require('./Product');
 const Sale = require('./Sale');
 const SaleItem = require('./SaleItem');
+const Permission = require('./Permission');
 
 // Product - Category (Many to One)
 Product.belongsTo(Category, {
@@ -72,5 +73,6 @@ module.exports = {
   Product,
   Sale,
   SaleItem,
+  Permission,
   syncDatabase
 };

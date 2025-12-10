@@ -48,13 +48,20 @@ const Sidebar = () => {
       icon: FiDollarSign,
       roles: ['ADMIN', 'VENDEDOR'],
       children: [
-        { name: 'Historial', path: '/sales' }
+        { name: 'Historial', path: '/sales' },
+        { name: 'Reportes', path: '/reports' }
       ]
     },
     { 
       name: 'Usuarios', 
       icon: FiUsers, 
       path: '/users', 
+      roles: ['ADMIN'] 
+    },
+    { 
+      name: 'Permisos', 
+      icon: FiSettings, 
+      path: '/permissions', 
       roles: ['ADMIN'] 
     }
   ];

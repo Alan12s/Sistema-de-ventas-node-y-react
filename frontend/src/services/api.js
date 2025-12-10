@@ -65,4 +65,15 @@ export const updateUser = async (id, data) => (await api.put(`/users/${id}`, dat
 export const changePassword = async (id, newPassword) => (await api.put(`/users/${id}/password`, { newPassword })).data;
 export const deleteUser = async (id) => (await api.delete(`/users/${id}`)).data;
 
+// ===== PERMISSIONS =====
+export const getPermissions = async (params = {}) => (await api.get('/permissions', { params })).data;
+export const getPermissionsByModule = async (role) => (await api.get('/permissions/by-module', { params: { role } })).data;
+export const updatePermission = async (id, data) => (await api.put(`/permissions/${id}`, data)).data;
+export const checkPermission = async (module, action) => (await api.get('/permissions/check', { params: { module, action } })).data;
+export const initializePermissions = async () => (await api.post('/permissions/initialize')).data;
+
+// ===== REPORTS =====
+export const getSalesStats = async (params = {}) => (await api.get('/reports/sales-stats', { params })).data;
+export const getChartsData = async (days = 7) => (await api.get('/reports/charts-data', { params: { days } })).data;
+
 export default api;

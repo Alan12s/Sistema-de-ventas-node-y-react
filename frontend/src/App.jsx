@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import useAuthStore from './store/authStore';
+
 // Pages
 import Login from './pages/auth/Login';
 import Dashboard from './pages/dashboard/Dashboard';
@@ -14,6 +15,8 @@ import SalesIndex from './pages/sales/SalesIndex';
 import UsersIndex from './pages/users/UsersIndex';
 import POS from './pages/pos/POS';
 import Profile from './pages/profile/Profile';
+import PermissionsIndex from './pages/permissions/PermissionsIndex';
+import ReportsIndex from './pages/reports/ReportsIndex';
 
 // Ruta protegida
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -107,6 +110,15 @@ function App() {
           } 
         />
 
+        <Route 
+          path="/reports" 
+          element={
+            <ProtectedRoute>
+              <ReportsIndex />
+            </ProtectedRoute>
+          } 
+        />
+
         {/* 🔒 Rutas solo ADMIN */}
         <Route 
           path="/products/create" 
@@ -131,6 +143,15 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
               <UsersIndex />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/permissions" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <PermissionsIndex />
             </ProtectedRoute>
           } 
         />
